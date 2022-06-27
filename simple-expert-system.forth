@@ -2,7 +2,7 @@
 100 CONSTANT MAX_RULES
 : question: create 0 c, 0 c, ;
 : ans 1+ ;
-: .question wordbyaddr type space ." (type y/n) " ;
+: .question body> >name id. space ." (type y/n) " ;
 : user-y/n key dup emit cr [char] y = ;
 : ask ( q --  a ) 
 	dup c@ 0= if dup .question user-y/n over ans c! -1 over c! then 
@@ -18,7 +18,7 @@ rules value nrules
 	begin over @ over 0= and while 
 		over @ prove or swap cell+ swap 
 	repeat
-	cr if ." Answer: " cell - @ wordbyaddr type else drop ." Unknown" then ;
+	cr if ." Answer: " cell - @ body> >name id. else drop ." Unknown" then ;
 
 \ Database
 
@@ -62,4 +62,3 @@ rule: common-cold
 	cough? ,
 	sore-throat?
 ;rule
-
