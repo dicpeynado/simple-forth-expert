@@ -1,27 +1,25 @@
 \ Simple expert system language
-100 CONSTANT MAX_RULES
-: question: create 0 c, 0 c, ;
-: ans 1+ ;
-: .question wordbyaddr type space ." (type y/n) " ;
-: user-y/n key dup emit cr [char] y = ;
-: ask ( q --  a ) 
-	dup c@ 0= if dup .question user-y/n over ans c! -1 over c! then 
-	ans c@ ;
-
-create rules MAX_RULES cells allot
-rules value nrules
-: >rules nrules ! nrules cell+ to nrules ;
-: rule: create here >rules ;
-: ;rule , 0 , ;
-: prove ( rule -- ) -1 begin over @ over and while over @ ask and swap cell+ swap repeat nip ;
-: solve rules 0 
-	begin over @ over 0= and while 
-		over @ prove or swap cell+ swap 
-	repeat
-	cr if ." Answer: " cell - @ wordbyaddr type else drop ." Unknown" then ;
+create rules 100 cells allot
+rules value rule		\ rule pointer
+rules @ value q			\ question pointer
+: ?@ dup if @ then ; 		\ check if end of questions or rules (0) before fetch
+: .sym dup 0<> if wordbyaddr type else drop ." Unknown" then ;
+: question: create 0 , ;	\ question data type y=-1,n=1 
+: nextr ( -- addr ) rule cell+ dup to rule ;
+: rule: create here rule ! nextr cell+ 0 swap ! ; : ;rule , 0 , ;
+: nextq ( -- addr ) q 
+	begin dup ?@ ?@ dup while
+		 1 = if drop nextr @ else cell+ then 
+	repeat drop dup to q ;
+: ask .sym ."  (type y/n)" ;
+: result ." Answer: " rule @ .sym ;
+: respond nextq ?@ dup if ask else drop result then ;
+\ User words
+: y -1 q @ ! respond ;
+: n 1 q @ ! respond ;
+: solve rules dup to rule @ to q respond ;
 
 \ Database
-
 question: slow-build-of-symptoms?
 question: sore-throat?
 question: runny-nose?
